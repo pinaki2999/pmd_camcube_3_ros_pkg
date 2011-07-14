@@ -1,0 +1,22 @@
+USB Rule Setup
+==============
+
+
+==> Create a new group USB
+
+	$ sudo groupadd usb
+	$ sudo usermod -aG usb <username> 
+
+==> Create a new file for "udev rule" for PMD-Devices
+
+	$ sudo vim /etc/udev/rules.d/56-pmd.rules
+
+==> Add the following lines to the '/etc/udev/rules.d/56-mesa.rules' file
+
+	BUS!="usb", SUBSYSTEM!=="usb_device", ACTION!="add", GOTO="kcontrol_rules_end"
+
+	#PMD Camcube3
+	SYSFS{idVendor}=="1c28", SYSFS{idProduct}=="c003", MODE="666", GROUP="usb"
+
+	LABEL="kcontrol_rules_end"
+	
