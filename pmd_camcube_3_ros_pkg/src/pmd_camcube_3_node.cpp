@@ -143,8 +143,8 @@ int initialize(int argc, char *argv[],ros::NodeHandle nh){
 	std::stringstream sourcePluginLocation, procPluginLocation;
 	sourcePluginLocation.clear();
 	sourcePluginLocation.clear();
-	sourcePluginLocation << PMD_PLUGIN_DIR << "camcube3";
-	procPluginLocation << PMD_PLUGIN_DIR << "camcubeproc";
+	sourcePluginLocation << PMD_PLUGIN_DIR << "camcube3.pap";
+	procPluginLocation << PMD_PLUGIN_DIR << "camcubeproc.ppp";
 
 
 	res = pmdOpen (&hnd, sourcePluginLocation.str().c_str(), SOURCE_PARAM, procPluginLocation.str().c_str(), PROC_PARAM);
@@ -285,8 +285,20 @@ int publishData(){
 
 	if(AmplitudeFilterOn){
 
-
-		for (size_t i = 0; i < cloud_ptr->points.size (); ++i)
+        for (size_t rr = 0; rr < cloud_ptr->height; ++rr)
+            for (size_t cc = 0; cc < cloud_ptr->width; ++cc)
+    		{
+                size_t ii = (rr*cloud_ptr->width)+cc;
+                size_t ee = (rr*cloud_ptr->width)+cloud_ptr->width-cc;
+	    		if(amplitudes[ii] > AmplitudeThreshold){
+		    		cloud_ptr->points[ii].x = cartesianDist[(ee*3) + 0];
+			    	cloud_ptr->points[ii].y = cartesianDist[(ii*3) + 1];
+				    cloud_ptr->points[ii].z = cartesianDist[(ii*3) + 2];
+    				cloud_ptr->points[ii].intensity = amplitudes[ii];
+    				countWidth++;
+    			}
+    		}
+/*		for (size_t i = 0; i < cloud_ptr->points.size (); ++i)
 		{
 			if(amplitudes[i]>AmplitudeThreshold){
 				cloud_ptr->points[i].x = cartesianDist[(i*3) + 0];
@@ -296,10 +308,21 @@ int publishData(){
 				countWidth++;
 			}
 		}
-
+*/
 	} else {
 
-		for (size_t i = 0; i < cloud_ptr->points.size (); ++i)
+        for (size_t rr = 0; rr < cloud_ptr->height; ++rr)
+            for (size_t cc = 0; cc < cloud_ptr->width; ++cc)
+    		{
+                size_t ii = (rr*cloud_ptr->width)+cc;
+                size_t ee = (rr*cloud_ptr->width)+cloud_ptr->width-cc;
+		    		cloud_ptr->points[ii].x = cartesianDist[(ee*3) + 0];
+			    	cloud_ptr->points[ii].y = cartesianDist[(ii*3) + 1];
+				    cloud_ptr->points[ii].z = cartesianDist[(ii*3) + 2];
+    				cloud_ptr->points[ii].intensity = amplitudes[ii];
+    				countWidth++;
+    		}
+/*		for (size_t i = 0; i < cloud_ptr->points.size (); ++i)
 		{
 			cloud_ptr->points[i].x = cartesianDist[(i*3) + 0];
 			cloud_ptr->points[i].y = cartesianDist[(i*3) + 1];
@@ -307,8 +330,8 @@ int publishData(){
 			cloud_ptr->points[i].intensity = amplitudes[i];
 			countWidth++;
 		}
+*/
 	}
-
 	cloud_ptr->width    = countWidth;
 	cloud_ptr->points.resize (cloud_ptr->width * cloud_ptr->height);
 
@@ -353,15 +376,29 @@ int publishData(){
 	 msg_non_filtered->header.frame_id = "tf_pmd_camcube";
 	 msg_non_filtered->height = 1;
 	 msg_non_filtered->width = noOfRows*noOfColumns;
-	 for  (int i =0; i< noOfRows*noOfColumns ; i++){
-		 pcl::PointXYZI temp_point;
-		 temp_point.x = cartesianDist[(i*3) + 0];
-		 temp_point.y = cartesianDist[(i*3) + 1];
-		 temp_point.z = cartesianDist[(i*3) + 2];
-		 temp_point.intensity = amplitudes[i];
-		 msg_non_filtered->points.push_back(temp_point);
-		 //msg_non_filtered->points.push_back ( pcl::PointXYZI(cartesianDist[(i*3) + 0],cartesianDist[(i*3) + 1],cartesianDist[(i*3) + 2], amplitudes[i]) );
-	 }
+     for (size_t rr = 0; rr < cloud_ptr->height; ++rr)
+        for (size_t cc = 0; cc < cloud_ptr->width; ++cc)
+    	{
+		    pcl::PointXYZI temp_point;
+            size_t ii = (rr*cloud_ptr->width)+cc;
+            size_t ee = (rr*cloud_ptr->width)+cloud_ptr->width-cc;
+		    temp_point.x = cartesianDist[(ee*3) + 0];
+		    temp_point.y = cartesianDist[(ii*3) + 1];
+		    temp_point.z = cartesianDist[(ii*3) + 2];
+		    temp_point.intensity = amplitudes[ii];
+		    msg_non_filtered->points.push_back(temp_point);
+		    //msg_non_filtered->points.push_back ( pcl::PointXYZI(cartesianDist[(ii*3) + 0],cartesianDist[(ii*3) + 1],cartesianDist[(ii*3) + 2], amplitudes[ii]) );
+    	}
+
+//	 for  (int i =0; i< noOfRows*noOfColumns ; i++){
+//		 pcl::PointXYZI temp_point;
+//		 temp_point.x = cartesianDist[(i*3) + 0];
+//		 temp_point.y = cartesianDist[(i*3) + 1];
+//		 temp_point.z = cartesianDist[(i*3) + 2];
+//		 temp_point.intensity = amplitudes[i];
+//		 msg_non_filtered->points.push_back(temp_point);
+//		 //msg_non_filtered->points.push_back ( pcl::PointXYZI(cartesianDist[(i*3) + 0],cartesianDist[(i*3) + 1],cartesianDist[(i*3) + 2], amplitudes[i]) );
+//	 }
 	 msg_non_filtered->header.stamp = ros::Time::now ();
 	 pub_non_filtered.publish (msg_non_filtered);
 
