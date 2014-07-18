@@ -16,15 +16,17 @@ FIND_PATH(PMD_INCLUDE_DIR NAMES pmdsdk2.h
   /usr/include/pmd/include/
   /usr/local/include/pmd/include/
   /opt/local/include/pmd/include/
+  /usr/local/lib/
   NO_DEFAULT_PATH
 )
 
-FIND_PATH(PMD_PLUGIN_DIR NAMES camcube3.L32.pap
+FIND_PATH(PMD_PLUGIN_DIR NAMES camcube3.pap
   PATHS
   $ENV{PMDDIR}/plugins/
   /usr/include/pmd/plugins/
   /usr/local/include/pmd/plugins/
   /opt/local/include/pmd/plugins/
+  /usr/local/lib/
   NO_DEFAULT_PATH
 )
 
